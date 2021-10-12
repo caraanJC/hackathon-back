@@ -13,6 +13,7 @@ router.post('/register', (req, res) => {
                 username: req.body.username,
                 password: password,
                 roles: ['user'],
+                avatar: '',
             });
             newUser.save().then((data) =>
                 res.send({
@@ -41,7 +42,12 @@ router.post('/login', (req, res) => {
                 res.header('auth-token', token).send({
                     success: true,
                     token,
-                    user: { username: data.username, roles: data.roles },
+                    user: {
+                        _id: data._id,
+                        username: data.username,
+                        roles: data.roles,
+                        avatar: data.avatar,
+                    },
                 });
             } else res.send({ success: false, message: 'Wrong credentials' });
         } else {
