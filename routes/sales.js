@@ -28,3 +28,5 @@ router.put('/:sale_id/editSale', auth, (req, res) => {
 router.delete('/:sale_id/deleteSale', auth, (req, res) => {
     sales.findByIdAndDelete(req.params.sale_id).then('Sale Deleted');
 });
+
+module.exports = router;
