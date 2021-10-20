@@ -7,6 +7,7 @@ const UsersSchema = new Schema({
     password: { type: String },
     roles: [String],
     avatar: { type: String },
+    cart: [{ itemID: { type: String }, count: { type: Number } }],
 });
 
 module.exports = mongoose.model('Users', UsersSchema);
