@@ -4,7 +4,7 @@ const auth = require('./verifyToken');
 const items = require('../models/items.model');
 const users = require('../models/users.model');
 
-router.get('/', auth, (req, res) => {
+router.get('/', (req, res) => {
     items.find().then((data) => {
         res.send(data);
     });
