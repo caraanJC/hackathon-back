@@ -5,12 +5,12 @@ const jwt = require('jsonwebtoken');
 const users = require('../models/users.model');
 
 router.post('/register', (req, res) => {
-    users.findOne({ username: req.body.username }).then(async (data) => {
+    users.findOne({ email: req.body.email }).then(async (data) => {
         if (!data) {
             // make a new user
             const password = await bcrypt.hash(req.body.password, 10);
             const newUser = new users({
-                username: req.body.username,
+                email: req.body.email,
                 password: password,
                 roles: ['user'],
                 avatar: '',
@@ -28,7 +28,7 @@ router.post('/register', (req, res) => {
 });
 
 router.post('/login', (req, res) => {
-    users.findOne({ username: req.body.username }).then(async (data) => {
+    users.findOne({ email: req.body.email }).then(async (data) => {
         if (data) {
             const match = await bcrypt.compare(
                 req.body.password,
@@ -44,9 +44,10 @@ router.post('/login', (req, res) => {
                     token,
                     user: {
                         _id: data._id,
-                        username: data.username,
+                        email: data.email,
                         roles: data.roles,
                         avatar: data.avatar,
+                        cart: data.cart,
                     },
                 });
             } else res.send({ success: false, message: 'Wrong credentials' });
