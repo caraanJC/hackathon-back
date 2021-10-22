@@ -13,8 +13,10 @@ router.get('/', auth, (req, res) => {
                     data.map((datum) => {
                         return {
                             _id: datum._id,
-                            username: datum.username,
+                            email: datum.email,
                             roles: datum.roles,
+                            cart: datum.cart,
+                            avatar: datum.avatar,
                         };
                     })
                 );
@@ -29,8 +31,9 @@ router.get('/:id/getUser', auth, (req, res) => {
     users.findById(req.params.id).then((data) => {
         res.send({
             _id: data._id,
-            username: data.username,
+            email: data.email,
             roles: data.roles,
+            cart: data.cart,
             avatar: data.avatar,
         });
     });
@@ -71,4 +74,68 @@ router.put('/changePassword', auth, async (req, res) => {
     }
 });
 
+// cart
+router.put('/cart/addToCart', auth, (req, res) => {
+    users.findById(req.user._id).then((data) => {
+        const itemExistingInCart = data.cart.find(
+            (item) => item.itemID === req.body.itemID
+        );
+
+        if (itemExistingInCart) {
+            users
+                .updateOne(
+                    { _id: req.user._id, 'cart.itemID': req.body.itemID },
+                    {
+                        $inc: { 'cart.$.count': 1 },
+                    }
+                )
+                .then((data) => res.send('Item Added To Cart'));
+        } else {
+            users
+                .findByIdAndUpdate(req.user._id, {
+                    $addToSet: { cart: { itemID: req.body.itemID, count: 1 } },
+                })
+                .then((data) => res.send('Increased Item Count in Cart'));
+        }
+    });
+});
+
+// increase cart item count
+router.put('/cart/increaseCount', auth, (req, res) => {
+    users
+        .updateOne(
+            { _id: req.user._id, 'cart._id': req.body.itemID },
+            {
+                $inc: { 'cart.$.count': 1 },
+            }
+        )
+        .then((data) => res.send('Increased Item Count in Cart'));
+});
+
+router.put('/cart/decreaseCount', auth, (req, res) => {
+    users
+        .updateOne(
+            { _id: req.user._id, 'cart._id': req.body.itemID },
+            {
+                $inc: { 'cart.$.count': -1 },
+            }
+        )
+        .then((data) => res.send('Decreased Item Count in Cart'));
+});
+
+router.put('/cart/deleteItem', auth, (req, res) => {
+    users
+        .findByIdAndUpdate(req.user._id, {
+            $pull: { cart: { _id: req.body.itemID } },
+        })
+        .then((data) => res.send('Deleted Item in Cart'));
+});
+
+router.put('/cart/emptyCart', auth, (req, res) => {
+    users
+        .findByIdAndUpdate(req.user._id, {
+            $set: { cart: [] },
+        })
+        .then((data) => res.send('Cart is now empty'));
+});
 module.exports = router;
