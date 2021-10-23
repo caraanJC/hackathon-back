@@ -45,4 +45,12 @@ router.delete('/:item_id/deleteItem', auth, (req, res) => {
     });
 });
 
+router.put('/:item_id/decreaseStock', auth, (req, res) => {
+    items
+        .findByIdAndUpdate(req.params.item_id, {
+            $inc: { stock: -req.body.count },
+        })
+        .then((data) => res.send('Decreased stock'));
+});
+
 module.exports = router;

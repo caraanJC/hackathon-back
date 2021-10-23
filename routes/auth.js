@@ -48,6 +48,7 @@ router.post('/login', (req, res) => {
                         roles: data.roles,
                         avatar: data.avatar,
                         cart: data.cart,
+                        address: data.address,
                     },
                 });
             } else res.send({ success: false, message: 'Wrong credentials' });

@@ -3,11 +3,12 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const SalesSchema = Schema({
-    name: String,
+    email: String,
     price: Number,
-    count: Number,
     date: { type: Date, default: Date.now },
     userID: String,
+    address: String,
+    noOfItems: Number,
 });
 
 module.exports = mongoose.model('Sales', SalesSchema);

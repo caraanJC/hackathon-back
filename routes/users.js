@@ -35,6 +35,7 @@ router.get('/:id/getUser', auth, (req, res) => {
             roles: data.roles,
             cart: data.cart,
             avatar: data.avatar,
+            address: data.address,
         });
     });
 });
@@ -45,6 +46,16 @@ router.put('/changeAvatar', auth, (req, res) => {
             $set: { avatar: req.body.url },
         })
         .then((data) => res.send('Avatar Uploaded'));
+});
+
+router.put('/changeAddress', auth, (req, res) => {
+    users
+        .findByIdAndUpdate(req.user._id, {
+            $set: { address: req.body.address },
+        })
+        .then((data) =>
+            res.send({ success: true, message: 'Address Changed' })
+        );
 });
 
 router.post('/checkPassword', auth, (req, res) => {
@@ -60,15 +71,28 @@ router.post('/checkPassword', auth, (req, res) => {
 
 router.put('/changePassword', auth, async (req, res) => {
     try {
-        const passwordHash = await bcrypt.hash(req.body.password, 10);
+        users.findById(req.user._id).then(async (data) => {
+            const match = await bcrypt.compare(
+                req.body.oldPassword,
+                data.password
+            );
+            if (match) {
+                const passwordHash = await bcrypt.hash(req.body.password, 10);
 
-        users
-            .findByIdAndUpdate(req.user._id, {
-                $set: { password: passwordHash },
-            })
-            .then((data) => {
-                res.send('Changed User Password');
-            });
+                users
+                    .findByIdAndUpdate(req.user._id, {
+                        $set: { password: passwordHash },
+                    })
+                    .then((data) => {
+                        res.send({
+                            success: true,
+                            message: 'Changed User Password',
+                        });
+                    });
+            } else {
+                res.send({ success: false, message: 'Wrong Password' });
+            }
+        });
     } catch (err) {
         console.log(err);
     }
@@ -104,7 +128,7 @@ router.put('/cart/addToCart', auth, (req, res) => {
 router.put('/cart/increaseCount', auth, (req, res) => {
     users
         .updateOne(
-            { _id: req.user._id, 'cart._id': req.body.itemID },
+            { _id: req.user._id, 'cart.itemID': req.body.itemID },
             {
                 $inc: { 'cart.$.count': 1 },
             }
@@ -115,7 +139,7 @@ router.put('/cart/increaseCount', auth, (req, res) => {
 router.put('/cart/decreaseCount', auth, (req, res) => {
     users
         .updateOne(
-            { _id: req.user._id, 'cart._id': req.body.itemID },
+            { _id: req.user._id, 'cart.itemID': req.body.itemID },
             {
                 $inc: { 'cart.$.count': -1 },
             }
@@ -126,7 +150,7 @@ router.put('/cart/decreaseCount', auth, (req, res) => {
 router.put('/cart/deleteItem', auth, (req, res) => {
     users
         .findByIdAndUpdate(req.user._id, {
-            $pull: { cart: { _id: req.body.itemID } },
+            $pull: { cart: { itemID: req.body.itemID } },
         })
         .then((data) => res.send('Deleted Item in Cart'));
 });
